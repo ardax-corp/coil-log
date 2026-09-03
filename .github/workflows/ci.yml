@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  CI: "true"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout coil-lang
+        uses: actions/checkout@v4
+        with:
+          repository: ardax-corp/coil-lang
+          path: .ci/coil-lang
+          submodules: false
+
+      - name: Checkout coil-stdlib
+        uses: actions/checkout@v4
+        with:
+          repository: ardax-corp/coil-stdlib
+          path: .ci/coil-stdlib
+          submodules: false
+
+      - name: Checkout coil-time
+        uses: actions/checkout@v4
+        with:
+          repository: ardax-corp/coil-time
+          path: .ci/coil-time
+          submodules: false
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libffi-dev libpcre2-dev build-essential
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .ci/coil-lang
+            .ci/coil-time/native
+
+      - name: Build coil
+        run: cargo build --bin coil --manifest-path .ci/coil-lang/Cargo.toml
+
+      - name: Build coil-time native
+        run: make
+        working-directory: .ci/coil-time
+
+      - name: Language harness (`coil test`)
+        run: |
+          .ci/coil-lang/target/debug/coil test \
+            --allow-dload time \
+            --ffi-search-path .ci/coil-time/native \
+            --root src \
+            --root .ci/coil-stdlib/src \
+            --root .ci/coil-time/src
