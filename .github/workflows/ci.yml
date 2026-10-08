@@ -33,6 +33,7 @@ jobs:
       - name: Language harness (`coil test`)
         run: |
           coil test \
+            --allow-read --allow-write \
             --allow-dload time \
             --ffi-search-path .ci/coil-time/native \
             --root src \
