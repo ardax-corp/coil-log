@@ -22,11 +22,11 @@ log.error("boom");
 | Path | Role |
 |------|------|
 | `src/log.hy` | `Level`, `Logger`, `format_line` |
-| `coil.toml` | `[package] name = "log"` so `use log::{…}` resolves |
+| `coil.toml` | spool manifest (`[package] name = "log"`); coil does not read it |
 
 ## Consume
 
-Sibling checkout of this repo, [coil-stdlib](https://github.com/ardax-corp/coil-stdlib), and [coil-time](https://github.com/ardax-corp/coil-time). Call `Logger::new` from [docs/consume.md](docs/consume.md).
+`spool add log` plus `spool add time` (both `--rev <commit SHA>`, no tags yet), or sibling checkouts of this repo, [coil-stdlib](https://github.com/ardax-corp/coil-stdlib), and [coil-time](https://github.com/ardax-corp/coil-time) passed as `--root`. Call `Logger::new` from [docs/consume.md](docs/consume.md).
 
 ## License
 

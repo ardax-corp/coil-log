@@ -2,66 +2,32 @@
 
 This package is `log`. `use log::{Logger, Level}` resolves from `src/log.hy`. The repo is private: use an org-authenticated git URL (`git@github.com:ardax-corp/coil-log.git` or HTTPS with credentials).
 
-coil-stdlib is a sibling `[module] roots` / `--root` entry (for `io` and string helpers), not a spool dependency of this package. Timestamps come from public [coil-time](https://github.com/ardax-corp/coil-time). Typecheck grant is `--allow-dload time`. The compiler does not read `[module] roots` for discovery; pass `--root` (default search is `src` under cwd).
+`io::sync` comes from coil-stdlib, not a dependency of this package. Timestamps come from public [coil-time](https://github.com/ardax-corp/coil-time), which is pure Coil (no `libtime`, no `dload`). coil reads no `coil.toml` and no `coil.lock`; pass `--root` (default search is `src` under cwd).
 
-Coil-to-Coil deps will be spool-owned once a public `spool` CLI exists. Until then `{ git }` parses and the pin is `coil.lock` `rev` + `content_hash`.
+## Depend on it
+
+With [spool](https://github.com/ardax-corp/spool) (git needs credentials that can read this repo):
+
+```bash
+spool add log --git git@github.com:ardax-corp/coil-log.git --rev <commit SHA>
+spool add time --git https://github.com/ardax-corp/coil-time.git --rev <commit SHA>
+```
+
+Neither repo has tags, so pin commits with `--rev`. This repo's own `coil.toml` names `time` as a path dep under `.ci/`, so add `time` yourself. spool writes `coil.lock` (`rev` + `content_hash`), links `.spool/deps/log` and `.spool/deps/time`, and passes `--root` for each plus coil-stdlib to `coil`.
 
 ## Sibling checkout
 
-Clone this repo next to your project, coil-stdlib, and coil-time. In the consumer:
-
-```toml
-[package]
-name = "app"
-version = "0.1.0"
-
-[ffi]
-search_paths = ["../coil-time/native"]
-
-[dependencies]
-time = { path = "../coil-time", trusted = true }
-```
+Clone this repo next to your project, coil-stdlib, and coil-time, and pass the roots yourself:
 
 ```bash
 coil test \
-  --allow-dload time \
-  --ffi-search-path ../coil-time/native \
   --root src \
   --root ../coil-log/src \
   --root ../coil-stdlib/src \
   --root ../coil-time/src
 ```
 
-`[dependencies] time = { path = "…" }` is spool metadata. The compiler does not follow path deps for discovery. `--root` is what loads `src/log.hy`, stdlib `io`, and `src/time.hy`. `[ffi] search_paths` locates `libtime`; it is not a dload grant. Do not put `[ffi] allow` in `coil.toml`.
-
-Build coil-time native from that checkout:
-
-```bash
-make -C ../coil-time
-```
-
-## Git dep and coil.lock
-
-`{ git }` is the parseable form. `version` is optional schema, not a tag. `rev` on the dep is stored only. Do not run `spool add`. There is no public spool CLI.
-
-```toml
-[dependencies]
-log = { git = "git@github.com:ardax-corp/coil-log.git" }
-time = { git = "https://github.com/ardax-corp/coil-time.git", trusted = true }
-```
-
-This repo has no tags. The pin is `coil.lock` `rev` + `content_hash`. Omit `tag`. Use sibling checkout until spool materializes `.spool/deps`. The compiler does not read `coil.lock` and does not inject roots.
-
-```
-# spool lockfile v1
-[[package]]
-name = 'log'
-git = 'git@github.com:ardax-corp/coil-log.git'
-rev = '<commit SHA>'
-content_hash = '<tree SHA>'
-```
-
-`rev` is the commit. `content_hash` is that commit's git tree (`git rev-parse 'HEAD^{tree}'`). Replace both when you move the pin.
+`--root` is what loads `src/log.hy`, stdlib `io::sync`, and `src/time.hy`. Writing a log file you open needs `--allow-write` (spool: `[permissions] write = true`).
 
 ## Call Logger
 
@@ -92,4 +58,4 @@ close(s)?;
 
 ### stdlib and time
 
-`io` / `io::sync` / `string` come from coil-stdlib via `--root`. `timestamp` comes from coil-time; pass `--allow-dload time` and put `libtime` on `--ffi-search-path` / `[ffi] search_paths`. This package has no native of its own.
+`io` and `string` are compiler built-ins; `io::sync` comes from coil-stdlib via `--root`. `timestamp` comes from coil-time via `--root`; it needs no `dload` grant. This package has no native of its own.
