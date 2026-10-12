@@ -1,3 +1,4 @@
+use tests::assert;
 use log::{Logger, Level, format_line, level_tag};
 use io::{open};
 use io::file::{read_text};
@@ -28,28 +29,28 @@ fn wipe(string path) {
 }
 
 test("level tags are short names") {
-    assert(level_tag(Level::Error) == "ERROR")?;
-    assert(level_tag(Level::Warn) == "WARN")?;
-    assert(level_tag(Level::Info) == "INFO")?;
-    assert(level_tag(Level::Debug) == "DEBUG")?;
+    assert!(level_tag(Level::Error) == "ERROR");
+    assert!(level_tag(Level::Warn) == "WARN");
+    assert!(level_tag(Level::Info) == "INFO");
+    assert!(level_tag(Level::Debug) == "DEBUG");
 }
 
 test("format_line has tag message and timestamp secs") {
     let line = format_line(Level::Info, "hello");
-    assert(contains(line, "INFO hello\n") || contains(line, "INFO hello"), "tag and message")?;
+    assert!(contains(line, "INFO hello\n") || contains(line, "INFO hello"), "tag and message");
     let parts = match split(line, " ") {
         Result::Ok(p) => p,
         Result::Err(_) => panic "split",
     };
-    assert(len(parts) >= 2, "at least tag and message")?;
+    assert!(len(parts) >= 2, "at least tag and message");
     if contains(line, " INFO ") {
-        assert(len(parts[0]) > 0, "secs prefix")?;
+        assert!(len(parts[0]) > 0, "secs prefix");
     }
 }
 
 test("format_line flattens newlines") {
     let line = format_line(Level::Warn, "a\nb\rc");
-    assert(contains(line, "WARN a b c"), "flattened")?;
+    assert!(contains(line, "WARN a b c"), "flattened");
 }
 
 test("min level filters debug") {
@@ -60,8 +61,8 @@ test("min level filters debug") {
     log.info("yes");
     let body = slurp(path);
     wipe(path);
-    assert(!contains(body, "DEBUG"), "debug dropped")?;
-    assert(contains(body, "INFO yes"), "info kept")?;
+    assert!(!contains(body, "DEBUG"), "debug dropped");
+    assert!(contains(body, "INFO yes"), "info kept");
 }
 
 test("each level method writes its tag") {
@@ -74,10 +75,10 @@ test("each level method writes its tag") {
     log.debug("d");
     let body = slurp(path);
     wipe(path);
-    assert(contains(body, "ERROR e"), "error")?;
-    assert(contains(body, "WARN w"), "warn")?;
-    assert(contains(body, "INFO i"), "info")?;
-    assert(contains(body, "DEBUG d"), "debug")?;
+    assert!(contains(body, "ERROR e"), "error");
+    assert!(contains(body, "WARN w"), "warn");
+    assert!(contains(body, "INFO i"), "info");
+    assert!(contains(body, "DEBUG d"), "debug");
 }
 
 test("log Level path and empty message") {
@@ -88,8 +89,8 @@ test("log Level path and empty message") {
     log.log(Level::Error, "");
     let body = slurp(path);
     wipe(path);
-    assert(!contains(body, "WARN"), "warn below min")?;
-    assert(contains(body, "ERROR"), "empty still tagged")?;
+    assert!(!contains(body, "WARN"), "warn below min");
+    assert!(contains(body, "ERROR"), "empty still tagged");
 }
 
 test("warn min keeps error") {
@@ -101,7 +102,7 @@ test("warn min keeps error") {
     log.error("also");
     let body = slurp(path);
     wipe(path);
-    assert(!contains(body, "INFO"), "info dropped")?;
-    assert(contains(body, "WARN keep"), "warn")?;
-    assert(contains(body, "ERROR also"), "error")?;
+    assert!(!contains(body, "INFO"), "info dropped");
+    assert!(contains(body, "WARN keep"), "warn");
+    assert!(contains(body, "ERROR also"), "error");
 }
