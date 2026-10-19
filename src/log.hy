@@ -29,7 +29,7 @@ fn flatten_msg(string msg) -> string {
     let b = to_bytes(msg);
     let out: Vec<byte> = Vec::new();
     let i = 0;
-    let n = len(b);
+    let n = b.len();
     let nl: byte = "\n";
     let cr: byte = "\r";
     let sp: byte = " ";

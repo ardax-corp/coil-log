@@ -42,9 +42,9 @@ test("format_line has tag message and timestamp secs") {
         Result::Ok(p) => p,
         Result::Err(_) => panic "split",
     };
-    assert!(len(parts) >= 2, "at least tag and message");
+    assert!(parts.len() >= 2, "at least tag and message");
     if contains(line, " INFO ") {
-        assert!(len(parts[0]) > 0, "secs prefix");
+        assert!(parts[0].len() > 0, "secs prefix");
     }
 }
 
