@@ -40,8 +40,6 @@ jobs:
         run: |
           coil test \
             --allow-read --allow-write \
-            --allow-dload time \
-            --ffi-search-path .ci/coil-time/native \
             --root src \
             --root "${{ steps.coil.outputs.stdlib }}" \
             --root .ci/coil-time/src
