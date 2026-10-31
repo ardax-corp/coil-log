@@ -1,32 +1,49 @@
 # coil-log
 
-Userland logger for [coil](https://github.com/ardax-corp/coil-lang). Package name is `log`, so `use log::{Logger, Level}` resolves here.
+Leveled line logger for [coil](https://github.com/ardax-corp/coil-lang). Package name is `log`, so `use log::{Logger, Level}` resolves here.
 
-This repository is private. Clone with an org-authenticated git URL.
-
-## API
+## Example
 
 ```coil
 use log::{Logger, Level};
 
-let log = Logger::new(Level::Info);
-log.info("up");
-log.debug("skipped");
-log.error("boom");
+fn main() {
+    let log = Logger::new(Level::Info);
+    log.info("server started");
+    log.debug("not written: below the minimum");
+    log.warn("cache miss\nretrying");
+    log.error("disk full");
+}
 ```
 
-`Logger::new` writes one line per event to stderr (`io::sync::write_all`). Inject a `Stream` with `Logger::to` for tests. Events below the min level are a no-op. Lines use tags `ERROR`/`WARN`/`INFO`/`DEBUG` (not scalar `Show`) and a `timestamp().secs()` prefix when coil-time is available.
+```bash
+coil --root ../coil-log/src --root ../coil-stdlib/src --root ../coil-time/src main.hy
+```
+
+stderr:
+
+```text
+1793479414 INFO server started
+1793479414 WARN cache miss retrying
+1793479414 ERROR disk full
+```
+
+`Logger::new` writes one line per event to stderr (`io::sync::write_all`). Inject a `Stream` with `Logger::to` (a log file, or a file in tests). Events below the min level are a no-op. Each line is the Unix time in seconds (`time::timestamp`), a tag (`ERROR`/`WARN`/`INFO`/`DEBUG`, not scalar `Show`) and the message with newlines turned into spaces. Every public item in `src/log.hy` has `///` docs with runnable examples (`coil test src` runs them).
 
 ## Layout
 
 | Path | Role |
 |------|------|
-| `src/log.hy` | `Level`, `Logger`, `format_line` |
-| `coil.toml` | spool manifest (`[package] name = "log"`); coil does not read it |
+| `src/log.hy` | `Level`, `Logger`, `format_line`, `level_tag` |
+| `coil.toml` | spool manifest (`[package] name = "log"`, depends on `time`); coil does not read it |
 
 ## Consume
 
-`spool add log` plus `spool add time` (both `--rev <commit SHA>`, no tags yet), or sibling checkouts of this repo, [coil-stdlib](https://github.com/ardax-corp/coil-stdlib), and [coil-time](https://github.com/ardax-corp/coil-time) passed as `--root`. Call `Logger::new` from [docs/consume.md](docs/consume.md).
+```bash
+spool add log --git https://github.com/ardax-corp/coil-log.git --rev <commit SHA>
+```
+
+There are no tags yet, so pin a commit with `--rev`. spool also fetches the `time` dependency ([coil-time](https://github.com/ardax-corp/coil-time)). Without spool, clone this repo, [coil-stdlib](https://github.com/ardax-corp/coil-stdlib) and coil-time next to your project and pass each `src` as `--root`. See [docs/consume.md](docs/consume.md).
 
 ## License
 
