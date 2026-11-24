@@ -47,7 +47,7 @@ fn main() {
 }
 ```
 
-`Logger::new(min)` writes to stderr. `Logger::to(min, stream)` injects any `io` `Stream` (a log file, or a file in tests). `error` / `warn` / `info` / `debug` / `log(Level, string)` are no-ops when `level < min`. Write failures and clock failures do not panic: a failed `timestamp()` omits the secs prefix; a failed write is dropped.
+`Logger::new(min)` writes to stderr. `Logger::to(min, out)` takes any `io::Write` (a log file, a socket, or a type of your own that implements `io::Write`). `error` / `warn` / `info` / `debug` / `log(Level, string)` are no-ops when `level < min`. Write failures and clock failures do not panic: a failed `timestamp()` omits the secs prefix; a failed write is dropped.
 
 Each event is one line: optional `secs` (int from `Timestamp.secs()`), a short tag (`ERROR` / `WARN` / `INFO` / `DEBUG`), the message, then LF. Scalar `Show` on `Level` would print the backing int; the line uses `level_tag` instead. Newlines in the message are replaced with spaces. `format_line(level, msg)` returns that line without writing it.
 
