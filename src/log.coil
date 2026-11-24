@@ -1,8 +1,8 @@
 // Leveled line logger. A `Logger` drops events below its minimum `Level` and
-// writes each kept event as one line (`<secs> <TAG> <message>`) to a stream:
-// stderr by default (through stdlib `io::sync::write_all`), or any `Stream`
+// writes each kept event as one line (`<secs> <TAG> <message>`) to a writer:
+// stderr by default (through stdlib `io::sync::write_all`), or any `io::Write`
 // passed to `Logger::to`. Timestamps come from the `time` package.
-use io::{stderr, Stream};
+use io::{stderr, Write};
 use io::sync::{write_all};
 use string::{format, to_bytes, from_bytes};
 use time::{timestamp};
@@ -112,7 +112,7 @@ fn format_line(Level level, string msg) -> string {
     };
 }
 
-/// A logger that writes events at or above a minimum `Level` to a stream.
+/// A logger that writes events at or above a minimum `Level` to a writer.
 ///
 /// Each kept event is one line in the `format_line` layout. Events below the
 /// minimum are dropped without formatting. Logging never fails or panics: a
@@ -129,7 +129,7 @@ fn format_line(Level level, string msg) -> string {
 /// ```
 class Logger {
     min: Level,
-    out: Stream,
+    out: Write,
 }
 
 impl Logger {
@@ -138,8 +138,8 @@ impl Logger {
         return new Logger(min, stderr());
     }
 
-    /// A logger writing events at or above `min` to `out`, such as a file
-    /// opened for writing.
+    /// A logger writing events at or above `min` to `out`: any `io::Write`,
+    /// such as a file opened for writing, a socket, or a type of your own.
     ///
     /// The logger does not close `out`; the caller does.
     ///
@@ -157,7 +157,7 @@ impl Logger {
     ///     return ();
     /// }
     /// ```
-    pub static fn to(Level min, Stream out) -> Logger {
+    pub static fn to(Level min, Write out) -> Logger {
         return new Logger(min, out);
     }
 
