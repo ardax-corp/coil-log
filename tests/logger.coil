@@ -111,7 +111,7 @@ shared class Lines {
 }
 
 impl Write for Lines {
-    fn write(Lines l, Vec<byte> buf) -> Result<int, IoError> {
+    fn write(Lines l, readonly Vec<byte> buf) -> Result<int, IoError> {
         let out = l.got;
         for b in buf {
             out.push(b);
