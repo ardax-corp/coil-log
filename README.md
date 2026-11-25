@@ -28,7 +28,7 @@ stderr:
 1793479414 ERROR disk full
 ```
 
-`Logger::new` writes one line per event to stderr (`io::sync::write_all`). Inject a `Stream` with `Logger::to` (a log file, or a file in tests). Events below the min level are a no-op. Each line is the Unix time in seconds (`time::timestamp`), a tag (`ERROR`/`WARN`/`INFO`/`DEBUG`, not scalar `Show`) and the message with newlines turned into spaces. Every public item in `src/log.coil` has `///` docs with runnable examples (`coil test src` runs them).
+`Logger::new` writes one line per event to stderr (`io::sync::write_all`). Pass any `io::Write` to `Logger::to`: a log file, a socket, or a type of your own (an in-memory writer in tests). Events below the min level are a no-op. Each line is the Unix time in seconds (`time::timestamp`), a tag (`ERROR`/`WARN`/`INFO`/`DEBUG`, not scalar `Show`) and the message with newlines turned into spaces. Every public item in `src/log.coil` has `///` docs with runnable examples (`coil test src` runs them).
 
 ## Layout
 

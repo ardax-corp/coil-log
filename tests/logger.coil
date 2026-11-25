@@ -1,9 +1,10 @@
 use tests::assert;
 use log::{Logger, Level, format_line, level_tag};
-use io::{open};
+use io::{open, IoError, Write};
 use io::file::{read_text};
 use io::fs::{remove_file};
 use text::{Searchable};
+use string::{from_bytes};
 
 fn write_logger(string path, Level min) -> Logger {
     let s = match open(path, "w") {
@@ -102,4 +103,35 @@ test("warn min keeps error") {
     assert!(!body.contains("INFO"), "info dropped");
     assert!(body.contains("WARN keep"), "warn");
     assert!(body.contains("ERROR also"), "error");
+}
+
+/// Collects what the logger writes, for a logger over a user `io::Write`.
+shared class Lines {
+    pub got: Vec<byte>,
+}
+
+impl Write for Lines {
+    fn write(Lines l, readonly Vec<byte> buf) -> Result<int, IoError> {
+        let out = l.got;
+        for b in buf {
+            out.push(b);
+        }
+        l.got = out;
+        return Ok(buf.len());
+    }
+
+    fn wait_writable(Lines l) -> Result<unit, IoError> {
+        return Ok(());
+    }
+}
+
+test("a logger writes to any io::Write") {
+    let empty: Vec<byte> = [];
+    let lines = new Lines(empty);
+    let log = Logger::to(Level::Info, lines);
+    log.debug("drop");
+    log.info("to memory");
+    let body = from_bytes(lines.got)?;
+    assert!(body.contains("INFO to memory"), "info");
+    assert!(!body.contains("DEBUG"), "debug dropped");
 }
